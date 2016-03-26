@@ -37,7 +37,7 @@ def xml2df():
                 for ee in e.getchildren():
                     if ee.tag == 'scene':
                         for eee in ee.getchildren():
-                            if eee.tag == 'speech':
+                            if eee.tag == 'speech': # find speech element to extract all lines
                                 name = unicode(root_xml.getchildren()[0].text.encode('utf-8'), "utf-8")
                                 gen = root.attrib['genre']
 
