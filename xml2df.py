@@ -19,25 +19,40 @@ def xml2df():
 
     file_list = np.ravel(file_list) # flatten
 
-    speechlines = []
+    speeches = []
     plays_name = []
     genre_list = []
-    for file_name in file_list: # for each xml file
+    speakers = []
+
+    # for each xml file
+    for file_name in file_list:
         path = 'text_data_xml/%s'% file_name
         tree = etree.parse(path)
         root = tree.getroot()
         xml = objectify.parse(open(path))
         root_xml = xml.getroot()
 
-        # find all lines of speech in each xml file
-        speechline_element = root.findall('act/scene/speech/line')
-        for i in xrange(len(speechline_element)):
-            sp = speechline_element[i].text
-            speechlines.append(sp)
-            plays_name.append(unicode(root_xml.getchildren()[0].text.encode('utf-8'), "utf-8"))
-            genre_list.append(root.attrib['genre'])
+        for e in root_xml.getchildren():
+            if e.tag == 'act':
+                for ee in e.getchildren():
+                    if ee.tag == 'scene':
+                        for eee in ee.getchildren():
+                            if eee.tag == 'speech':
+                                name = unicode(root_xml.getchildren()[0].text.encode('utf-8'), "utf-8")
+                                gen = root.attrib['genre']
 
-    d = {'speech_lines':speechlines, 'plays_name':plays_name, 'genre':genre_list}
-    lines_all = pd.DataFrame(d)
+                                speakers.append(str(eee.getchildren()[0]))
+                                plays_name.append(name)
+                                genre_list.append(gen)
+                                for i in eee.getchildren()[1:]:
+                                    if i.text is not None:
+                                        lines = ''.join(unicode(i.text.encode('utf-8'),'utf-8'))
+                                    else:
+                                        continue
+                                speeches.append(lines)
 
-    return lines_all
+    d = {'speeches':speeches, 'plays_name':plays_name,
+        'genre':genre_list, 'speakers':speakers}
+    speech_all = pd.DataFrame(d)
+
+    return speech_all
